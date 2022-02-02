@@ -183,7 +183,6 @@ func includeDirectoryAnyway(path string, pm *fileutils.PatternMatcher) bool {
 // filesystem, optionally extracting contents of local files that look like
 // non-empty archives.
 func (b *Builder) Add(destination string, extract bool, options AddAndCopyOptions, sources ...string) error {
-	fmt.Printf("options: %#v\n", options)
 	mountPoint, err := b.Mount(b.MountLabel)
 	if err != nil {
 		return err
@@ -221,12 +220,10 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 	// should have matched at least one item, otherwise we consider it an
 	// error.
 	var localSourceStats []*copier.StatsForGlob
-	println("-----> Add localSourceStats")
 	if len(localSources) > 0 {
 		statOptions := copier.StatOptions{
 			CheckForArchives: extract,
 		}
-		println("---------> SNIP")
 		localSourceStats, err = copier.Stat(contextDir, contextDir, statOptions, localSources)
 		if err != nil {
 			return errors.Wrapf(err, "checking on sources under %q", contextDir)
@@ -255,8 +252,6 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 	}
 
 	// Find out which user (and group) the destination should belong to.
-	// Better here ?
-	println("-----> Add idmapping")
 	var chownDirs, chownFiles *idtools.IDPair
 	var userUID, userGID uint32
 	if options.Chown != "" {
@@ -278,8 +273,6 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 	chownDirs = &idtools.IDPair{UID: int(userUID), GID: int(userGID)}
 	chownFiles = &idtools.IDPair{UID: int(userUID), GID: int(userGID)}
 	if options.Chown == "" && options.PreserveOwnership {
-		// is this required anylonger ?
-		println("-----> Add PreserveOnwership check")
 		chownDirs = nil
 		chownFiles = nil
 	}
@@ -379,7 +372,6 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 
 	// Copy each source in turn.
 	for _, src := range sources {
-		println("-----> copy src", src)
 		var multiErr *multierror.Error
 		var getErr, closeErr, renameErr, putErr error
 		var wg sync.WaitGroup
@@ -387,14 +379,12 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 			pipeReader, pipeWriter := io.Pipe()
 			wg.Add(1)
 			go func() {
-				println("-----> get remote", src)
 				getErr = getURL(src, chownFiles, mountPoint, renameTarget, pipeWriter, chmodDirsFiles)
 				pipeWriter.Close()
 				wg.Done()
 			}()
 			wg.Add(1)
 			go func() {
-				println("copier.Put")
 				b.ContentDigester.Start("")
 				hashCloser := b.ContentDigester.Hash()
 				hasher := io.Writer(hashCloser)
@@ -404,12 +394,9 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 				if options.DryRun {
 					_, putErr = io.Copy(hasher, pipeReader)
 				} else {
-
-					println("-----> put")
 					putOptions := copier.PutOptions{
-						UIDMap: destUIDMap,
-						GIDMap: destGIDMap,
-						// FIXME must set put options here ...
+						UIDMap:        destUIDMap,
+						GIDMap:        destGIDMap,
 						ChownDirs:     nil,
 						ChmodDirs:     nil,
 						ChownFiles:    nil,
@@ -443,7 +430,6 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 		var localSourceStat *copier.StatsForGlob
 		for _, st := range localSourceStats {
 			if st.Glob == src {
-				println("----> set localSourceStat")
 				localSourceStat = st
 				break
 			}
@@ -451,8 +437,6 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 		if localSourceStat == nil {
 			continue
 		}
-
-		fmt.Printf("--> local source %#v\n", localSourceStat)
 
 		// Iterate through every item that matched the glob.
 		itemsCopied := 0
@@ -493,10 +477,7 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 			}
 			st := localSourceStat.Results[glob]
 
-			fmt.Printf("fooo %#v\n", st)
-			fmt.Printf("%s - %t\n", options.Chown, options.PreserveOwnership)
 			if options.Chown == "" && options.PreserveOwnership {
-				println("YES --preserve ownership")
 				chownDirs = &idtools.IDPair{UID: int(st.Uid), GID: int(st.Gid)}
 				chownFiles = &idtools.IDPair{UID: int(st.Uid), GID: int(st.Gid)}
 			}
