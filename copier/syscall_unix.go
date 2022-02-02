@@ -89,6 +89,17 @@ func sameDevice(a, b os.FileInfo) bool {
 	return au.Dev == bu.Dev
 }
 
+func ownership(info os.FileInfo) (uint32, uint32) {
+	switch v := info.Sys().(type) {
+	case *syscall.Stat_t:
+		return v.Uid, v.Gid
+	case *unix.Stat_t:
+		return v.Uid, v.Gid
+	default:
+		return 0, 0
+	}
+}
+
 const (
 	testModeMask           = int64(os.ModePerm)
 	testIgnoreSymlinkDates = false

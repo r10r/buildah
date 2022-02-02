@@ -476,6 +476,7 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 				itemsCopied++
 			}
 			st := localSourceStat.Results[glob]
+
 			pipeReader, pipeWriter := io.Pipe()
 			wg.Add(1)
 			go func() {
