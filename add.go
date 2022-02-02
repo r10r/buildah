@@ -478,8 +478,8 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 			st := localSourceStat.Results[glob]
 
 			if options.Chown == "" && options.PreserveOwnership {
-				chownDirs = &idtools.IDPair{UID: int(st.Uid), GID: int(st.Gid)}
-				chownFiles = &idtools.IDPair{UID: int(st.Uid), GID: int(st.Gid)}
+				chownDirs = nil
+				chownFiles = nil
 			}
 
 			pipeReader, pipeWriter := io.Pipe()
