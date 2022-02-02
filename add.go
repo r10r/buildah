@@ -476,6 +476,12 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 				itemsCopied++
 			}
 			st := localSourceStat.Results[glob]
+
+			if options.Chown == "" && options.PreserveOwnership {
+				chownDirs = &idtools.IDPair{UID: int(st.Uid), GID: int(st.Gid)}
+				chownFiles = &idtools.IDPair{UID: int(st.Uid), GID: int(st.Gid)}
+			}
+
 			pipeReader, pipeWriter := io.Pipe()
 			wg.Add(1)
 			go func() {

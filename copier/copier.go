@@ -200,6 +200,8 @@ type StatForItem struct {
 	IsRegular       bool   // dereferenced value for symlinks
 	IsArchive       bool   // dereferenced value for symlinks
 	ImmediateTarget string `json:",omitempty"` // raw link content
+	Uid             uint32
+	Gid             uint32
 }
 
 // getResponse encodes a response for a single Get request.
@@ -1038,6 +1040,9 @@ func copierHandlerStat(req request, pm *fileutils.PatternMatcher) *response {
 			result.IsDir = linfo.IsDir()
 			result.IsRegular = result.Mode.IsRegular()
 			result.IsSymlink = (linfo.Mode() & os.ModeType) == os.ModeSymlink
+			uid, gid := ownership(linfo)
+			result.Uid = uid
+			result.Gid = gid
 			checkForArchive := req.StatOptions.CheckForArchives
 			if result.IsSymlink {
 				// if the match was a symbolic link, read it
