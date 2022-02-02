@@ -372,6 +372,7 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 
 	// Copy each source in turn.
 	for _, src := range sources {
+		println("PUT", src)
 		var multiErr *multierror.Error
 		var getErr, closeErr, renameErr, putErr error
 		var wg sync.WaitGroup
@@ -477,6 +478,8 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 			}
 			st := localSourceStat.Results[glob]
 
+			fmt.Printf("%s %#v\n", src, st)
+
 			if options.Chown == "" && options.PreserveOwnership {
 				chownDirs = nil
 				chownFiles = nil
@@ -521,6 +524,7 @@ func (b *Builder) Add(destination string, extract bool, options AddAndCopyOption
 			wg.Add(1)
 			go func() {
 				if st.IsDir {
+					println("ISDIR")
 					b.ContentDigester.Start("dir")
 				} else {
 					b.ContentDigester.Start("file")

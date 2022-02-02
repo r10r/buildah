@@ -1352,6 +1352,7 @@ func handleRename(rename map[string]string, name string) string {
 func copierHandlerGetOne(srcfi os.FileInfo, symlinkTarget, name, contentPath string, options GetOptions, tw *tar.Writer, hardlinkChecker *util.HardlinkChecker, idMappings *idtools.IDMappings) error {
 	// build the header using the name provided
 	hdr, err := tar.FileInfoHeader(srcfi, symlinkTarget)
+	//panic(fmt.Sprintf("copierHandlerGetOne --> %s\n%#v\n%#v\n%#v", name, srcfi, hdr, options))
 	if err != nil {
 		return errors.Wrapf(err, "error generating tar header for %s (%s)", contentPath, symlinkTarget)
 	}
