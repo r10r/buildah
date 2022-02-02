@@ -123,6 +123,7 @@ func addAndCopyCmd(c *cobra.Command, args []string, verb string, iopts addCopyRe
 	if len(args) == 0 {
 		return errors.Errorf("container ID must be specified")
 	}
+	fmt.Printf("opts --> %#v\n", iopts)
 	name := args[0]
 	args = Tail(args)
 	if len(args) == 0 {
@@ -222,6 +223,8 @@ func addAndCopyCmd(c *cobra.Command, args []string, verb string, iopts addCopyRe
 	}
 
 	builder.ContentDigester.Restart()
+
+	println("-----> buildah.AddAndCopyOptions: PreserveOwnership: %t", iopts.keepOwnership)
 
 	options := buildah.AddAndCopyOptions{
 		Chmod:             iopts.chmod,

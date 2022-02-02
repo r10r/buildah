@@ -273,6 +273,7 @@ func Stat(root string, directory string, options StatOptions, globs []string) ([
 		Globs:       append([]string{}, globs...),
 		StatOptions: options,
 	}
+	fmt.Printf("-----> STAT: %#v\n", req)
 	resp, err := copier(nil, nil, req)
 	if err != nil {
 		return nil, err
@@ -494,6 +495,7 @@ func looksLikeAbs(candidate string) bool {
 }
 
 func copier(bulkReader io.Reader, bulkWriter io.Writer, req request) (*response, error) {
+	println("-----> copier")
 	if req.Directory == "" {
 		if req.Root == "" {
 			wd, err := os.Getwd()
@@ -529,6 +531,7 @@ func copier(bulkReader io.Reader, bulkWriter io.Writer, req request) (*response,
 }
 
 func copierWithoutSubprocess(bulkReader io.Reader, bulkWriter io.Writer, req request) (*response, error) {
+	println("---> copierWithoutSubprocess")
 	req.preservedRoot = req.Root
 	req.rootPrefix = string(os.PathSeparator)
 	req.preservedDirectory = req.Directory
@@ -573,6 +576,7 @@ func closeIfNotNilYet(f **os.File, what string) {
 }
 
 func copierWithSubprocess(bulkReader io.Reader, bulkWriter io.Writer, req request) (resp *response, err error) {
+	println("---> copierSubprocess", copierCommand)
 	if bulkReader == nil {
 		bulkReader = bytes.NewReader([]byte{})
 	}
@@ -614,6 +618,7 @@ func copierWithSubprocess(bulkReader io.Reader, bulkWriter io.Writer, req reques
 	cmd.Stdout = stdoutWrite
 	cmd.Stderr = &errorBuffer
 	cmd.ExtraFiles = []*os.File{bulkReaderRead, bulkWriterWrite}
+	logrus.Info("start copier process")
 	if err = cmd.Start(); err != nil {
 		return nil, errors.Wrapf(err, "error starting subprocess")
 	}
@@ -979,6 +984,8 @@ func copierHandlerEval(req request) *response {
 }
 
 func copierHandlerStat(req request, pm *fileutils.PatternMatcher) *response {
+
+	println("----> copierHandleStat")
 	errorResponse := func(fmtspec string, args ...interface{}) *response {
 		return &response{Error: fmt.Sprintf(fmtspec, args...), Stat: statResponse{}}
 	}
@@ -999,6 +1006,8 @@ func copierHandlerStat(req request, pm *fileutils.PatternMatcher) *response {
 		if len(globMatched) == 0 && strings.ContainsAny(glob, "*?[") {
 			continue
 		}
+
+		println("-----> mark 0")
 		// collect the matches
 		s.Globbed = make([]string, 0, len(globMatched))
 		s.Results = make(map[string]*StatForItem)
@@ -1041,6 +1050,8 @@ func copierHandlerStat(req request, pm *fileutils.PatternMatcher) *response {
 			result.IsRegular = result.Mode.IsRegular()
 			result.IsSymlink = (linfo.Mode() & os.ModeType) == os.ModeSymlink
 			uid, gid := ownership(linfo)
+			println("-----> ownership")
+			panic(fmt.Sprintf("--> ownership uid:%d gid:%d", uid, gid))
 			result.Uid = uid
 			result.Gid = gid
 			checkForArchive := req.StatOptions.CheckForArchives
@@ -1113,6 +1124,7 @@ func copierHandlerGet(bulkWriter io.Writer, req request, pm *fileutils.PatternMa
 	errorResponse := func(fmtspec string, args ...interface{}) (*response, func() error, error) {
 		return &response{Error: fmt.Sprintf(fmtspec, args...), Stat: statResponse.Stat, Get: getResponse{}}, nil, nil
 	}
+	println("-----> copierHandlerGet")
 	if statResponse.Error != "" {
 		return errorResponse("%s", statResponse.Error)
 	}
@@ -1351,6 +1363,7 @@ func handleRename(rename map[string]string, name string) string {
 
 func copierHandlerGetOne(srcfi os.FileInfo, symlinkTarget, name, contentPath string, options GetOptions, tw *tar.Writer, hardlinkChecker *util.HardlinkChecker, idMappings *idtools.IDMappings) error {
 	// build the header using the name provided
+	println("-----> copierHandlerGetOne")
 	hdr, err := tar.FileInfoHeader(srcfi, symlinkTarget)
 	if err != nil {
 		return errors.Wrapf(err, "error generating tar header for %s (%s)", contentPath, symlinkTarget)
@@ -1486,6 +1499,7 @@ func copierHandlerGetOne(srcfi os.FileInfo, symlinkTarget, name, contentPath str
 }
 
 func copierHandlerPut(bulkReader io.Reader, req request, idMappings *idtools.IDMappings) (*response, func() error, error) {
+	println("-----> copierHandlerPut")
 	errorResponse := func(fmtspec string, args ...interface{}) (*response, func() error, error) {
 		return &response{Error: fmt.Sprintf(fmtspec, args...), Put: putResponse{}}, nil, nil
 	}
@@ -1831,6 +1845,7 @@ func copierHandlerPut(bulkReader io.Reader, req request, idMappings *idtools.IDM
 }
 
 func copierHandlerMkdir(req request, idMappings *idtools.IDMappings) (*response, func() error, error) {
+	println("-----> copierHandlerMkdir")
 	errorResponse := func(fmtspec string, args ...interface{}) (*response, func() error, error) {
 		return &response{Error: fmt.Sprintf(fmtspec, args...), Mkdir: mkdirResponse{}}, nil, nil
 	}
