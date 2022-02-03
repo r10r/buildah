@@ -82,6 +82,11 @@ func sameDevice(a, b os.FileInfo) bool {
 	return true
 }
 
+// ownership returns 0,0 since it's not implemented on windows. See also os.Chown.
+func ownership(info os.FileInfo) (uint32, uint32) {
+	return 0, 0
+}
+
 const (
 	testModeMask           = int64(0600)
 	testIgnoreSymlinkDates = true
