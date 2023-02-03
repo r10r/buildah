@@ -10,7 +10,7 @@ require (
 	github.com/containers/ocicrypt v1.1.4-0.20220428134531-566b808bdf6f
 	github.com/containers/storage v1.41.1-0.20220517121726-5019cd55275c
 	github.com/docker/distribution v2.8.1+incompatible
-	github.com/docker/docker v20.10.16+incompatible
+	github.com/docker/docker v23.0.0+incompatible
 	github.com/docker/go-units v0.4.0
 	github.com/docker/libnetwork v0.8.0-dev.2.0.20190625141545-5a177b73e316
 	github.com/fsouza/go-dockerclient v1.7.11
@@ -19,6 +19,8 @@ require (
 	github.com/ishidawataru/sctp v0.0.0-20210226210310-f2269e66cdee // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/mattn/go-shellwords v1.0.12
+	github.com/moby/patternmatcher v0.5.0 // indirect
+	github.com/moby/sys/sequential v0.5.0 // indirect
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.19.0
 	github.com/opencontainers/go-digest v1.0.0
@@ -38,7 +40,7 @@ require (
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 )
 
